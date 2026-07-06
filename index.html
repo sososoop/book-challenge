@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>📚 나만의 책 출판하기 챌린지</title>
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" rel="stylesheet">
+<style>
+  :root {
+    --bg: #faf7f2;
+    --card: #ffffff;
+    --ink: #2d2a26;
+    --ink-soft: #6b645c;
+    --line: #e8e2d9;
+    --accent: #8a6d4f;
+    --accent-deep: #6d5540;
+    --accent-soft: #f0e9df;
+    --purple: #9065b0; --purple-bg: #f3ecf8;
+    --blue: #337ea9;   --blue-bg: #e9f2f8;
+    --green: #448361;  --green-bg: #eaf3ee;
+    --gold: #b8860b;
+    --danger: #c25548;
+    --radius: 14px;
+    --shadow: 0 1px 3px rgba(45,42,38,.06), 0 6px 20px rgba(45,42,38,.05);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: "Pretendard", -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.6;
+    padding-bottom: 80px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 0 20px; }
+
+  /* ── 헤더 ── */
+  header {
+    background: linear-gradient(135deg, #4a3b2d 0%, #6d5540 55%, #8a6d4f 100%);
+    color: #fff;
+    padding: 48px 0 88px;
+    text-align: center;
+    position: relative;
+  }
+  header .emoji { font-size: 44px; display:block; margin-bottom: 10px; }
+  header h1 { font-size: clamp(24px, 4.5vw, 34px); font-weight: 800; letter-spacing: -0.5px; }
+  header p.sub { margin-top: 10px; font-size: 15px; opacity: .85; }
+  .reward-banner {
+    display: inline-flex; align-items: center; gap: 8px;
+    margin-top: 18px;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.25);
+    padding: 9px 18px;
+    border-radius: 999px;
+    font-size: 14px;
+    backdrop-filter: blur(4px);
+  }
+  .sync-status {
+    position: absolute;
+    top: 14px; right: 18px;
+    font-size: 12px;
+    opacity: .75;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .sync-dot { width: 8px; height: 8px; border-radius: 50%; background: #ffd166; }
+  .sync-dot.on { background: #7ddb8a; }
+
+  /* ── 통계 카드 ── */
+  .stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+    margin-top: -48px;
+    position: relative;
+    z-index: 2;
+  }
+  .stat-card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px 16px;
+    text-align: center;
+    border: 1px solid var(--line);
+  }
+  .stat-card .num { font-size: 26px; font-weight: 800; color: var(--accent-deep); }
+  .stat-card .label { font-size: 13px; color: var(--ink-soft); margin-top: 2px; }
+
+  /* ── 탭 ── */
+  .tabs {
+    display: flex; gap: 8px;
+    margin: 28px 0 18px;
+    background: var(--accent-soft);
+    padding: 6px;
+    border-radius: 12px;
+  }
+  .tab {
+    flex: 1;
+    border: none;
+    background: transparent;
+    padding: 12px 8px;
+    font-family: inherit;
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all .18s;
+  }
+  .tab.active { background: var(--card); color: var(--accent-deep); box-shadow: var(--shadow); }
+
+  /* ── 툴바 ── */
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 10px;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+  .toolbar .spacer { flex: 1; }
+  select, input[type="text"] {
+    font-family: inherit;
+    font-size: 14px;
+    padding: 9px 12px;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--card);
+    color: var(--ink);
+    outline: none;
+  }
+  select:focus, input[type="text"]:focus { border-color: var(--accent); }
+  .btn {
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 600;
+    padding: 9px 16px;
+    border-radius: 9px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    color: var(--ink);
+    cursor: pointer;
+    transition: all .15s;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent-deep); }
+  .btn.primary { background: var(--accent-deep); border-color: var(--accent-deep); color: #fff; }
+  .btn.primary:hover { background: #5a4635; }
+
+  /* ── 멤버 카드 ── */
+  .member-list { display: flex; flex-direction: column; gap: 12px; }
+  .member-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 18px 20px;
+    transition: transform .15s;
+  }
+  .member-card.qualified { border-color: #e3c98a; background: linear-gradient(0deg, #fffdf6, #fffdf6); }
+  .member-head {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .member-name { font-size: 17px; font-weight: 700; }
+  .cohort-badge {
+    font-size: 12px; font-weight: 700;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .cohort-1 { color: var(--purple); background: var(--purple-bg); }
+  .cohort-2 { color: var(--blue);   background: var(--blue-bg); }
+  .cohort-3 { color: var(--green);  background: var(--green-bg); }
+  .gift-badge {
+    font-size: 12px; font-weight: 700;
+    color: var(--gold);
+    background: #fdf6e3;
+    border: 1px solid #f0e0b0;
+    padding: 3px 10px;
+    border-radius: 999px;
+  }
+  .member-head .pct {
+    margin-left: auto;
+    font-size: 16px;
+    font-weight: 800;
+    color: var(--accent-deep);
+    font-variant-numeric: tabular-nums;
+  }
+  .del-btn {
+    border: none; background: none;
+    color: #c8c1b8; font-size: 16px;
+    cursor: pointer; padding: 2px 6px;
+    border-radius: 6px;
+  }
+  .del-btn:hover { color: var(--danger); background: #faeeec; }
+
+  .progress-track {
+    height: 8px;
+    background: var(--accent-soft);
+    border-radius: 999px;
+    margin: 12px 0 14px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #b59371, var(--accent-deep));
+    transition: width .35s ease;
+  }
+  .member-card.qualified .progress-fill { background: linear-gradient(90deg, #e0b84e, var(--gold)); }
+
+  .tasks {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+  }
+  .task {
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    padding: 10px 4px;
+    border: 1.5px solid var(--line);
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+    transition: all .15s;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    background: var(--card);
+  }
+  .task:hover { border-color: var(--accent); }
+  .task .check {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 2px solid #d5cdc2;
+    display: grid; place-items: center;
+    font-size: 13px;
+    color: transparent;
+    transition: all .15s;
+    background: #fff;
+  }
+  .task.done { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-deep); font-weight: 600; }
+  .task.done .check { background: var(--accent-deep); border-color: var(--accent-deep); color: #fff; }
+  .task input { display: none; }
+
+  .empty {
+    text-align: center;
+    padding: 56px 20px;
+    color: var(--ink-soft);
+    background: var(--card);
+    border: 1.5px dashed var(--line);
+    border-radius: var(--radius);
+  }
+  .empty .big { font-size: 36px; margin-bottom: 8px; }
+
+  /* ── 추가 폼 (모달) ── */
+  dialog {
+    border: none;
+    border-radius: 16px;
+    padding: 28px;
+    width: min(92vw, 380px);
+    box-shadow: 0 20px 60px rgba(0,0,0,.2);
+  }
+  dialog::backdrop { background: rgba(45,42,38,.4); }
+  dialog h3 { font-size: 18px; margin-bottom: 18px; }
+  dialog label { display:block; font-size: 13px; font-weight: 600; color: var(--ink-soft); margin: 14px 0 6px; }
+  dialog input[type="text"], dialog select { width: 100%; }
+  dialog .actions { display: flex; gap: 10px; margin-top: 24px; }
+  dialog .actions .btn { flex: 1; }
+
+  footer {
+    text-align: center;
+    margin-top: 40px;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  @media (max-width: 560px) {
+    .tasks { grid-template-columns: repeat(5, 1fr); gap: 5px; }
+    .task { font-size: 11px; padding: 8px 2px; }
+    .stat-card .num { font-size: 21px; }
+    header { padding: 36px 0 80px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="sync-status"><span class="sync-dot" id="syncDot"></span><span id="syncLabel">연결 중…</span></div>
+  <div class="wrap">
+    <span class="emoji">📚</span>
+    <h1>나만의 책 출판하기 챌린지</h1>
+    <p class="sub">7월 전자책 승인 · 8월 종이책 승인까지, 과제 체크로 진도율을 확인하세요</p>
+    <div class="reward-banner">🎁 진행률 <b>80% 이상</b> 달성 시 8월 AI 특강 무료 참여!</div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="stats">
+    <div class="stat-card"><div class="num" id="statMembers">0</div><div class="label">참여 멤버</div></div>
+    <div class="stat-card"><div class="num" id="statAvg">0%</div><div class="label">평균 진행률</div></div>
+    <div class="stat-card"><div class="num" id="statQualified">0</div><div class="label">🎁 특강 자격</div></div>
+  </div>
+
+  <div class="tabs" role="tablist">
+    <button class="tab active" data-month="july" role="tab">📖 7월 · 전자책</button>
+    <button class="tab" data-month="august" role="tab">📕 8월 · 종이책</button>
+  </div>
+
+  <div class="toolbar">
+    <select id="cohortFilter" title="기수 필터">
+      <option value="all">전체 기수</option>
+      <option value="1기">1기</option>
+      <option value="2기">2기</option>
+      <option value="3기">3기</option>
+    </select>
+    <select id="sortBy" title="정렬">
+      <option value="name">이름순</option>
+      <option value="progress">진행률순</option>
+    </select>
+    <div class="spacer"></div>
+    <button class="btn" id="exportBtn" title="데이터를 JSON 파일로 백업">백업</button>
+    <button class="btn primary" id="addBtn">+ 멤버 추가</button>
+  </div>
+
+  <div class="member-list" id="memberList">
+    <div class="empty"><div class="big">📚</div>데이터를 불러오는 중입니다…</div>
+  </div>
+
+  <footer>체크하면 모든 멤버의 화면에 실시간으로 반영됩니다 ✨</footer>
+</main>
+
+<dialog id="addDialog">
+  <h3>멤버 추가</h3>
+  <form method="dialog" id="addForm">
+    <label for="nameInput">이름</label>
+    <input type="text" id="nameInput" placeholder="예: 김수현" required autocomplete="off">
+    <label for="cohortInput">기수</label>
+    <select id="cohortInput">
+      <option value="1기">1기</option>
+      <option value="2기">2기</option>
+      <option value="3기">3기</option>
+    </select>
+    <div class="actions">
+      <button type="button" class="btn" id="cancelBtn">취소</button>
+      <button type="submit" class="btn primary">추가</button>
+    </div>
+  </form>
+</dialog>
+
+<script type="module">
+  import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
+  import { getDatabase, ref, onValue, set, get, remove, push, child }
+    from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
+
+  const firebaseConfig = {
+    apiKey: 'AIzaSyB2rNfkTOrbEDg4ewldG1Ts_IKyK2AP5nI',
+    authDomain: 'book-challenge-a90c7.firebaseapp.com',
+    databaseURL: 'https://book-challenge-a90c7-default-rtdb.firebaseio.com',
+    projectId: 'book-challenge-a90c7',
+    storageBucket: 'book-challenge-a90c7.firebasestorage.app',
+    messagingSenderId: '577173257924',
+    appId: '1:577173257924:web:8753558b21629b8ddc1391',
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
+  const membersRef = ref(db, 'challenge/members');
+
+  const TASK_COUNT = 5;
+  const TASK_LABELS = {
+    july:   ['주제 선정', '목차 작성', '원고 집필', '표지 제작', '전자책 승인'],
+    august: ['원고 보완', '내지 편집', '표지 확정', 'ISBN 신청', '종이책 승인'],
+  };
+
+  // 노션 데이터베이스의 실제 멤버 명단 (2026-07 기준) — DB가 비어 있을 때 1회 자동 등록
+  const INITIAL_MEMBERS = [
+    { name: '강주영', cohort: '3기' },
+    { name: '강호성', cohort: '1기' },
+    { name: '김미화', cohort: '2기' },
+    { name: '김슬기', cohort: '2기' },
+    { name: '김예지', cohort: '3기' },
+    { name: '임혜진', cohort: '3기' },
+    { name: '장지혜', cohort: '3기' },
+    { name: '채미정', cohort: '1기' },
+    { name: '황지은', cohort: '2기' },
+  ];
+
+  let members = [];        // [{id, name, cohort, tasks:{july:[], august:[]}}]
+  let currentMonth = 'july';
+  let connected = false;
+
+  function normalizeTasks(t) {
+    return Array.from({ length: TASK_COUNT }, (_, i) => !!(t && t[i]));
+  }
+
+  function progressOf(member, month) {
+    const done = member.tasks[month].filter(Boolean).length;
+    return Math.round((done / TASK_COUNT) * 100);
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[c]));
+  }
+
+  function setSyncStatus(ok, label) {
+    document.getElementById('syncDot').className = 'sync-dot' + (ok ? ' on' : '');
+    document.getElementById('syncLabel').textContent = label;
+  }
+
+  function render() {
+    const list = document.getElementById('memberList');
+    const filter = document.getElementById('cohortFilter').value;
+    const sortBy = document.getElementById('sortBy').value;
+
+    let shown = members.filter(m => filter === 'all' || m.cohort === filter);
+    shown.sort((a, b) => {
+      if (sortBy === 'progress') {
+        return progressOf(b, currentMonth) - progressOf(a, currentMonth)
+          || a.name.localeCompare(b.name, 'ko');
+      }
+      return a.name.localeCompare(b.name, 'ko');
+    });
+
+    const avg = members.length
+      ? Math.round(members.reduce((s, m) => s + progressOf(m, currentMonth), 0) / members.length)
+      : 0;
+    const qualified = members.filter(m => progressOf(m, currentMonth) >= 80).length;
+    document.getElementById('statMembers').textContent = members.length;
+    document.getElementById('statAvg').textContent = avg + '%';
+    document.getElementById('statQualified').textContent = qualified;
+
+    if (!shown.length) {
+      list.innerHTML = `<div class="empty"><div class="big">📖</div>
+        표시할 멤버가 없어요.<br>[+ 멤버 추가] 버튼으로 등록해 보세요!</div>`;
+      return;
+    }
+
+    list.innerHTML = '';
+    shown.forEach(member => {
+      const pct = progressOf(member, currentMonth);
+      const isQualified = pct >= 80;
+      const card = document.createElement('div');
+      card.className = 'member-card' + (isQualified ? ' qualified' : '');
+
+      const cohortClass = 'cohort-' + member.cohort.charAt(0);
+      const labels = TASK_LABELS[currentMonth];
+      const tasksHtml = member.tasks[currentMonth]
+        .map((done, i) => `
+          <label class="task ${done ? 'done' : ''}" data-id="${member.id}" data-idx="${i}">
+            <span class="check">✓</span>
+            <span>${labels[i]}</span>
+            <input type="checkbox" ${done ? 'checked' : ''}>
+          </label>`).join('');
+
+      card.innerHTML = `
+        <div class="member-head">
+          <span class="member-name">${escapeHtml(member.name)}</span>
+          <span class="cohort-badge ${cohortClass}">${escapeHtml(member.cohort)}</span>
+          ${isQualified ? '<span class="gift-badge">🎁 AI 특강 자격</span>' : ''}
+          <span class="pct">${pct}%</span>
+          <button class="del-btn" data-del="${member.id}" title="멤버 삭제">✕</button>
+        </div>
+        <div class="progress-track"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="tasks">${tasksHtml}</div>`;
+      list.appendChild(card);
+    });
+  }
+
+  // ── Firebase 실시간 구독 ──
+  onValue(membersRef, snapshot => {
+    const val = snapshot.val();
+    members = val
+      ? Object.entries(val).map(([id, m]) => ({
+          id,
+          name: m.name || '(이름 없음)',
+          cohort: m.cohort || '1기',
+          tasks: {
+            july: normalizeTasks(m.tasks && m.tasks.july),
+            august: normalizeTasks(m.tasks && m.tasks.august),
+          },
+        }))
+      : [];
+    connected = true;
+    setSyncStatus(true, '실시간 연결됨');
+    render();
+
+    // DB가 완전히 비어 있으면 노션 명단으로 1회 초기화
+    if (!val && !window.__seeded) {
+      window.__seeded = true;
+      const seed = {};
+      INITIAL_MEMBERS.forEach((m, i) => {
+        seed['m' + String(i).padStart(2, '0')] = {
+          name: m.name,
+          cohort: m.cohort,
+          tasks: {
+            july: Array(TASK_COUNT).fill(false),
+            august: Array(TASK_COUNT).fill(false),
+          },
+        };
+      });
+      set(membersRef, seed);
+    }
+  }, error => {
+    setSyncStatus(false, '연결 오류');
+    document.getElementById('memberList').innerHTML =
+      `<div class="empty"><div class="big">⚠️</div>데이터베이스에 연결할 수 없습니다.<br>
+       잠시 후 새로고침해 주세요. (${escapeHtml(error.code || error.message || '')})</div>`;
+  });
+
+  // ── 이벤트 ──
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      tab.classList.add('active');
+      currentMonth = tab.dataset.month;
+      render();
+    });
+  });
+
+  document.getElementById('cohortFilter').addEventListener('change', render);
+  document.getElementById('sortBy').addEventListener('change', render);
+
+  document.getElementById('memberList').addEventListener('change', e => {
+    const label = e.target.closest('.task');
+    if (!label || !connected) return;
+    set(ref(db, `challenge/members/${label.dataset.id}/tasks/${currentMonth}/${label.dataset.idx}`),
+        e.target.checked);
+  });
+
+  document.getElementById('memberList').addEventListener('click', e => {
+    const btn = e.target.closest('[data-del]');
+    if (!btn) return;
+    const member = members.find(m => m.id === btn.dataset.del);
+    if (member && confirm(`'${member.name}' 멤버를 삭제할까요?\n모든 사람의 화면에서 사라집니다.`)) {
+      remove(ref(db, 'challenge/members/' + member.id));
+    }
+  });
+
+  const dialog = document.getElementById('addDialog');
+  document.getElementById('addBtn').addEventListener('click', () => {
+    document.getElementById('addForm').reset();
+    dialog.showModal();
+    document.getElementById('nameInput').focus();
+  });
+  document.getElementById('cancelBtn').addEventListener('click', () => dialog.close());
+  document.getElementById('addForm').addEventListener('submit', () => {
+    const name = document.getElementById('nameInput').value.trim();
+    if (!name) return;
+    set(push(membersRef), {
+      name,
+      cohort: document.getElementById('cohortInput').value,
+      tasks: {
+        july: Array(TASK_COUNT).fill(false),
+        august: Array(TASK_COUNT).fill(false),
+      },
+    });
+  });
+
+  // 백업(JSON 다운로드)
+  document.getElementById('exportBtn').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify({ members }, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = '책출판챌린지_백업.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+  });
+</script>
+</body>
+</html>
