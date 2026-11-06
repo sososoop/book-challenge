@@ -162,7 +162,8 @@ footer .wrap{border-top:2px solid var(--ink);padding-block:12px 28px;display:fle
   import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js';
   import { getDatabase, ref, onValue, set, remove } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js';
 
-  // book-challenge와 같은 파이어베이스 프로젝트, 저장 위치만 lunch/ 로 분리
+  // book-challenge와 같은 파이어베이스 프로젝트. 규칙이 challenge 아래만 열려 있어서 challenge/lunch/ 에 따로 저장
+  // (챌린지 페이지는 challenge/members 만 읽으므로 서로 섞이지 않음)
   const firebaseConfig = {
     apiKey: 'AIzaSyB2rNfkTOrbEDg4ewldG1Ts_IKyK2AP5nI',
     authDomain: 'book-challenge-a90c7.firebaseapp.com',
@@ -173,7 +174,7 @@ footer .wrap{border-top:2px solid var(--ink);padding-block:12px 28px;display:fle
     appId: '1:577173257924:web:8753558b21629b8ddc1391',
   };
   const db = getDatabase(initializeApp(firebaseConfig));
-  const ORDERS = 'lunch/orders';
+  const ORDERS = 'challenge/lunch/orders';
 
   const TARGET = 6;
   const FOODS = ['참치김밥', '돈가스김밥', '새우튀김김밥', '매운제육쌈김밥', '크림치즈호두김밥', '매운 멸추 김밥'];
@@ -296,7 +297,7 @@ footer .wrap{border-top:2px solid var(--ink);padding-block:12px 28px;display:fle
     $('peopleHint').textContent = '연결 오류';
     $('people').innerHTML = `<div class="empty">주문 목록을 불러올 수 없어요.<br>(${esc(err?.code || err?.message || '')})</div>`;
     const n = $('notice'); n.hidden = false;
-    n.textContent = '저장소에 연결하지 못했어요. 파이어베이스 규칙에서 lunch 칸이 열려 있는지 확인이 필요해요.';
+    n.textContent = '저장소에 연결하지 못했어요. 잠시 후 새로고침해 주세요.';
   });
 </script>
 </body>
